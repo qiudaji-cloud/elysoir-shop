@@ -48,13 +48,23 @@ export const wpService = {
       const products: Product[] = wcProducts.map((p: any) => ({
         id: p.id.toString(),
         name: p.name,
+        // Tagline (简短描述): 我们保留清洗 HTML 的逻辑，因为它通常用于卡片上的纯文本展示
         tagline: p.short_description ? p.short_description.replace(/<[^>]*>?/gm, '').substring(0, 60) + '...' : 'Exclusively for Elysoir',
-        description: p.short_description ? p.short_description.replace(/<[^>]*>?/gm, '') : '',
-        longDescription: p.description ? p.description.replace(/<[^>]*>?/gm, '') : '',
+        
+        // Description (短描述): 保留 HTML，以便在详情页正确渲染富文本
+        description: p.short_description || '',
+        
+        // Long Description (长描述): 保留 HTML
+        longDescription: p.description || '',
+        
         price: parseFloat(p.price || '0'),
         category: p.categories[0]?.name || 'Collection',
         categories: p.categories.map((c: any) => c.name),
+        // 主图
         imageUrl: p.images[0]?.src || 'https://images.unsplash.com/photo-1515562141207-7a18b5ce7142?auto=format&fit=crop&q=80&w=1000',
+        // 轮播图相册：映射所有图片的 URL
+        gallery: p.images?.map((img: any) => img.src) || [],
+        
         features: p.attributes?.find((a: any) => a.name === 'Specifications' || a.name === 'Details')?.options || ['Fine Craftsmanship', 'Limited Edition'],
         hasVariations: p.variations && p.variations.length > 0,
         options: p.attributes

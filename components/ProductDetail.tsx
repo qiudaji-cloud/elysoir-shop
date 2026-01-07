@@ -19,6 +19,21 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onAddToC
   const [error, setError] = useState<string | null>(null);
   const [isVariationsLoading, setIsVariationsLoading] = useState(false);
   const [richOptions, setRichOptions] = useState<ProductOption[]>(product.options || []);
+  
+  // 轮播图状态
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  // 合并主图和相册，确保去重且主图在第一位
+  const productImages = React.useMemo(() => {
+    const imgs = product.gallery && product.gallery.length > 0 
+      ? product.gallery 
+      : [product.imageUrl];
+    return Array.from(new Set(imgs)); // 简单去重
+  }, [product]);
+
+  // 当切换产品时，重置图片索引
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [product]);
 
   // 加载变体数据以获取具体的 SKU 图片
   useEffect(() => {
@@ -32,8 +47,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onAddToC
             const updatedOptions = product.options.map(opt => ({
               ...opt,
               values: opt.values.map(val => {
-                // 在变体列表中寻找包含该属性值的第一个变体
-                // WooCommerce 的属性名有时带 pa_ 前缀，这里做兼容处理
                 const matchedVar = vars.find((v: any) => 
                   v.attributes.some((attr: any) => 
                     (attr.name.toLowerCase() === opt.name.toLowerCase() || attr.name.toLowerCase() === `pa_${opt.name.toLowerCase()}`) && 
@@ -41,7 +54,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onAddToC
                   )
                 );
                 
-                // 优先使用变体的主图作为小样图
                 return {
                   ...val,
                   image: matchedVar?.image?.src || val.image
@@ -95,25 +107,70 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onAddToC
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
           
-          <div className="flex flex-col gap-4">
-            <div className="w-full aspect-[4/5] bg-[#EBE7DE] overflow-hidden shadow-sm">
+          {/* 左侧：图片展示区 (Carousel) */}
+          <div className="flex flex-col gap-6">
+            {/* 主图 */}
+            <div className="w-full aspect-[4/5] bg-[#EBE7DE] overflow-hidden shadow-sm relative group">
               <img 
-                src={product.imageUrl} 
-                alt={product.name} 
+                src={productImages[currentImageIndex]} 
+                alt={`${product.name} - View ${currentImageIndex + 1}`}
                 className="w-full h-full object-cover transition-all duration-700"
               />
+              
+              {/* 左右切换箭头 (仅当有多张图时显示) */}
+              {productImages.length > 1 && (
+                <>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex(prev => (prev === 0 ? productImages.length - 1 : prev - 1));
+                    }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-sm flex items-center justify-center text-[#2C2A26] opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex(prev => (prev === productImages.length - 1 ? 0 : prev + 1));
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-sm flex items-center justify-center text-[#2C2A26] opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                  </button>
+                </>
+              )}
             </div>
+
+            {/* 缩略图导航 (仅当有多张图时显示) */}
+            {productImages.length > 1 && (
+              <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+                {productImages.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentImageIndex(idx)}
+                    className={`shrink-0 w-20 h-20 bg-[#EBE7DE] overflow-hidden transition-all duration-300 ${
+                      currentImageIndex === idx 
+                        ? 'opacity-100 ring-1 ring-[#2C2A26]' 
+                        : 'opacity-50 hover:opacity-80'
+                    }`}
+                  >
+                    <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-col justify-center max-w-xl">
+          <div className="flex flex-col justify-start max-w-xl">
              <span className="text-sm font-medium text-[#A8A29E] uppercase tracking-widest mb-2">{product.category}</span>
              <h1 className="text-4xl md:text-5xl font-serif text-[#2C2A26] mb-4 tracking-tight">{product.name}</h1>
              <span className="text-2xl font-light text-[#2C2A26] mb-8">${product.price}</span>
              
-             <p className="text-[#5D5A53] leading-relaxed font-light text-lg mb-10 border-b border-[#D6D1C7] pb-10">
-               {product.longDescription || product.description}
-             </p>
-
              <div className="space-y-10 mb-12">
                {richOptions.map((option) => (
                   <div key={option.name}>
@@ -132,7 +189,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onAddToC
                             selectedOptions[option.name] === val.name ? 'scale-105' : 'hover:scale-105'
                           }`}
                         >
-                          {/* SKU Image Box - 统一为精致的方形 */}
                           <div className={`w-14 h-14 md:w-16 md:h-16 overflow-hidden border transition-all duration-500 ${
                             selectedOptions[option.name] === val.name 
                               ? 'border-[#2C2A26] shadow-lg scale-100' 
@@ -173,7 +229,15 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onAddToC
                  Add to Cart — ${product.price}
                </button>
                
-               <div className="mt-16 space-y-4 pt-8 border-t border-[#D6D1C7]/30">
+               <div className="mt-12 pt-10 border-t border-[#D6D1C7]/50">
+                  <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#A8A29E] mb-6">Details</h4>
+                  <div 
+                    className="prose prose-stone prose-sm max-w-none text-[#5D5A53] font-serif leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: product.longDescription || product.description }}
+                  />
+               </div>
+
+               <div className="mt-8 space-y-4 pt-8 border-t border-[#D6D1C7]/30">
                   <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#A8A29E]">Specifications</h4>
                   <ul className="grid grid-cols-1 gap-2 text-[11px] text-[#5D5A53] uppercase tracking-widest font-light">
                     {product.features.map((feature, idx) => (
