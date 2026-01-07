@@ -1,45 +1,58 @@
 
-name: Deploy to Server
+# GitHub Actions Workflow: 构建并部署 Elysoir 网站
+# 当代码被推送到 main 分支时，此工作流将自动触发。
+
+name: Build and Deploy Elysoir
 
 on:
   push:
     branches:
-      - main
+      - main  # 触发部署的分支，请确保您的主分支是这个名字
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # 使用最新的 Ubuntu 环境
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      # 步骤 1: 检出您的代码
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      # 步骤 2: 设置 Node.js 环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: '20' # 使用 Node.js 20.x 版本
+          cache: 'npm' # 缓存 npm 依赖，加快构建速度
 
-      - name: Install and Build
+      # 步骤 3: 安装项目依赖
+      - name: Install Dependencies
+        run: npm install
+
+      # 步骤 4: 构建项目
+      # 这里是最关键的一步：我们将 GitHub Secrets 注入到构建命令中。
+      # 这些 VITE_ 开头的变量名必须和您的代码（例如 wpService.ts）以及 .env.local 文件中的变量名完全一致。
+      - name: Build Project
+        run: npm run build
         env:
-          # 这里非常重要！根据你的打包工具，GitHub 会把 Secret 注入进去
-          # 如果你是 Vite，这里会被读取为 import.meta.env.VITE_API_KEY
-          # 如果你是 CRA，这里会被读取为 process.env.REACT_APP_API_KEY
-          # 我们把所有可能的变量名都设为同一个值
-          API_KEY: ${{ secrets.API_KEY }}
-          VITE_API_KEY: ${{ secrets.API_KEY }}
-          REACT_APP_API_KEY: ${{ secrets.API_KEY }}
-        run: |
-          npm install
-          npm run build
+          # 将 GitHub Secrets 映射到 Vite 的环境变量
+          VITE_SITE_URL: ${{ secrets.SITE_URL }} # 假设您在 GitHub Secret 中设置了 SITE_URL
+          VITE_WC_CONSUMER_KEY: ${{ secrets.WC_CONSUMER_KEY }}
+          VITE_WC_CONSUMER_SECRET: ${{ secrets.WC_CONSUMER_SECRET }}
+          VITE_ALI_API_KEY: ${{ secrets.ALI_API_KEY }}
 
-      - name: Sync to FTP
-        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+      # 步骤 5: 通过 FTP 部署到您的服务器
+      - name: Deploy to FTP Server
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
+          # 使用您在 GitHub Secrets 中设置的 FTP 凭据
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          # 本地构建后的文件夹，Vite 默认是 dist，CRA 默认是 build
-          # 请确认你的 package.json 里 build 出来叫什么，通常现在 React 都是 dist
-          local-dir: ./dist/ 
-          # 服务器上的目录，通常是 /public_html/ 或者 /www/wwwroot/你的域名/
-          # 请务必确认这个路径，否则会覆盖错文件！
-          server-dir: /public_html/
+          # 本地构建输出的文件夹，Vite 默认为 dist
+          local-dir: ./dist/
+          # 您服务器上网站的根目录。请务必确认这是正确的路径！
+          # 如果您的 WordPress 在 /www/wwwroot/elysoir.top/，那么这里通常就是这个路径。
+          server-dir: /www/wwwroot/elysoir.top/
+          # 清理目标目录，确保只保留最新部署的文件
+          cleanup: true

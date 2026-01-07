@@ -6,18 +6,26 @@
 
 import { Product, JournalArticle, CartItem } from '../types';
 
-const SITE_URL = 'https://elysoir.top'; 
-const CK = 'ck_c9022a6e59fc7b495b6fb9943b3a91a88365c086'; 
-const CS = 'cs_c987098b48414275a80ee406d7ad3b64c9f3bd85'; 
+// 从 Vite 环境变量中安全地读取配置
+// import.meta.env.VITE_SITE_URL 是 Vite 加载 .env.local 文件中 VITE_SITE_URL 变量的标准方式
+const SITE_URL = import.meta.env.VITE_SITE_URL;
+const CK = import.meta.env.VITE_WC_CONSUMER_KEY;
+const CS = import.meta.env.VITE_WC_CONSUMER_SECRET;
+
+// 检查环境变量是否成功加载，如果没有，则在开发模式下抛出错误提示
+if (!SITE_URL || !CK || !CS) {
+  throw new Error("Missing WooCommerce environment variables. Please check your .env.local file and ensure VITE_SITE_URL, VITE_WC_CONSUMER_KEY, and VITE_WC_CONSUMER_SECRET are set.");
+}
 
 const WC_BASE_URL = `${SITE_URL}/wp-json/wc/v3`;
 const WP_BASE_URL = `${SITE_URL}/wp-json/wp/v2`;
+// 使用 Basic Auth 对密钥进行编码，这是标准的 WooCommerce API 认证方式
 const AUTH = btoa(`${CK}:${CS}`);
 
 export const wpService = {
   async fetchProducts(): Promise<{ products: Product[], categories: string[] }> {
     try {
-      // 并行请求：同时获取产品和类目，确保类目列表完整（解决您提到的类目缺失问题）
+      // 并行请求：同时获取产品和类目，确保类目列表完整
       const [productsRes, categoriesRes] = await Promise.all([
         fetch(`${WC_BASE_URL}/products?per_page=100&status=publish`, {
           headers: { 'Authorization': `Basic ${AUTH}` }
@@ -38,9 +46,7 @@ export const wpService = {
         description: p.short_description ? p.short_description.replace(/<[^>]*>?/gm, '') : '',
         longDescription: p.description ? p.description.replace(/<[^>]*>?/gm, '') : '',
         price: parseFloat(p.price || '0'),
-        // 获取主分类用于展示，如果没有则显示 Collection
         category: p.categories[0]?.name || 'Collection',
-        // 获取所有分类用于筛选逻辑
         categories: p.categories.map((c: any) => c.name),
         imageUrl: p.images[0]?.src || 'https://images.unsplash.com/photo-1515562141207-7a18b5ce7142?auto=format&fit=crop&q=80&w=1000',
         features: p.attributes?.find((a: any) => a.name === 'Specifications' || a.name === 'Details')?.options || ['Fine Craftsmanship', 'Limited Edition'],
@@ -53,16 +59,15 @@ export const wpService = {
           }))
       }));
 
-      // 处理类目列表：优先使用 API 返回的完整列表
+      // 处理类目列表
       let categories = ['All'];
       if (categoriesRes.ok) {
         const wcCategories = await categoriesRes.json();
         const categoryNames = wcCategories
             .map((c: any) => c.name)
-            .filter((name: string) => name !== 'Uncategorized'); // 过滤掉“未分类”
+            .filter((name: string) => name !== 'Uncategorized');
         categories = ['All', ...categoryNames];
       } else {
-        // 如果类目接口失败，回退到从产品中提取
         const derivedCategories = [...new Set(products.map(p => p.category))];
         categories = ['All', ...derivedCategories];
       }
@@ -87,7 +92,6 @@ export const wpService = {
   },
 
   getCheckoutUrl(cartItems: CartItem[]): string {
-    // 强制跳转到 WordPress 原生购物车，触发 Nginx 规则交给 PHP 处理
     return `${SITE_URL}/cart`;
   },
 
