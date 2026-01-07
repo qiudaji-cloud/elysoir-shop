@@ -207,11 +207,11 @@ function App() {
 
       {view.type !== 'checkout' && <Footer onLinkClick={handleNavClick} />}
       
-      <Assistant 
+      {/* <Assistant 
         products={products} 
         onSync={refreshData}
         lastSync={lastSync}
-      />
+      /> */}
       
       <CartDrawer 
         isOpen={isCartOpen}

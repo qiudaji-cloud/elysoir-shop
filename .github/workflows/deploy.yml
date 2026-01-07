@@ -1,0 +1,45 @@
+
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install and Build
+        env:
+          # 这里非常重要！根据你的打包工具，GitHub 会把 Secret 注入进去
+          # 如果你是 Vite，这里会被读取为 import.meta.env.VITE_API_KEY
+          # 如果你是 CRA，这里会被读取为 process.env.REACT_APP_API_KEY
+          # 我们把所有可能的变量名都设为同一个值
+          API_KEY: ${{ secrets.API_KEY }}
+          VITE_API_KEY: ${{ secrets.API_KEY }}
+          REACT_APP_API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          npm install
+          npm run build
+
+      - name: Sync to FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          # 本地构建后的文件夹，Vite 默认是 dist，CRA 默认是 build
+          # 请确认你的 package.json 里 build 出来叫什么，通常现在 React 都是 dist
+          local-dir: ./dist/ 
+          # 服务器上的目录，通常是 /public_html/ 或者 /www/wwwroot/你的域名/
+          # 请务必确认这个路径，否则会覆盖错文件！
+          server-dir: /public_html/
