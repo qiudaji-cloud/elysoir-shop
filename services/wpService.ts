@@ -6,26 +6,32 @@
 
 import { Product, JournalArticle, CartItem } from '../types';
 
-// 从 Vite 环境变量中安全地读取配置
-// import.meta.env.VITE_SITE_URL 是 Vite 加载 .env.local 文件中 VITE_SITE_URL 变量的标准方式
-const SITE_URL = import.meta.env.VITE_SITE_URL;
-const CK = import.meta.env.VITE_WC_CONSUMER_KEY;
-const CS = import.meta.env.VITE_WC_CONSUMER_SECRET;
+// 从 Vite 环境变量中读取配置，提供默认空字符串以防构建失败
+const SITE_URL = import.meta.env.VITE_SITE_URL || '';
+const CK = import.meta.env.VITE_WC_CONSUMER_KEY || '';
+const CS = import.meta.env.VITE_WC_CONSUMER_SECRET || '';
 
-// 检查环境变量是否成功加载，如果没有，则在开发模式下抛出错误提示
+// 移除顶层的强制检查 throw new Error，改为在控制台输出警告
+// 这样可以确保 CI/CD 构建流程不会因为缺少密钥而中断
 if (!SITE_URL || !CK || !CS) {
-  throw new Error("Missing WooCommerce environment variables. Please check your .env.local file and ensure VITE_SITE_URL, VITE_WC_CONSUMER_KEY, and VITE_WC_CONSUMER_SECRET are set.");
+  console.warn("WooCommerce environment variables are missing. Product data will not load correctly.");
 }
 
 const WC_BASE_URL = `${SITE_URL}/wp-json/wc/v3`;
 const WP_BASE_URL = `${SITE_URL}/wp-json/wp/v2`;
-// 使用 Basic Auth 对密钥进行编码，这是标准的 WooCommerce API 认证方式
-const AUTH = btoa(`${CK}:${CS}`);
+
+// 只有当密钥存在时才生成 Auth Header，否则为空
+const AUTH = (CK && CS) ? btoa(`${CK}:${CS}`) : '';
 
 export const wpService = {
   async fetchProducts(): Promise<{ products: Product[], categories: string[] }> {
+    // 运行时检查：如果没有配置，直接返回空数据
+    if (!SITE_URL || !AUTH) {
+        return { products: [], categories: ['All'] };
+    }
+
     try {
-      // 并行请求：同时获取产品和类目，确保类目列表完整
+      // 并行请求：同时获取产品和类目
       const [productsRes, categoriesRes] = await Promise.all([
         fetch(`${WC_BASE_URL}/products?per_page=100&status=publish`, {
           headers: { 'Authorization': `Basic ${AUTH}` }
@@ -80,6 +86,7 @@ export const wpService = {
   },
 
   async fetchProductVariations(productId: string): Promise<any[]> {
+    if (!SITE_URL || !AUTH) return [];
     try {
       const response = await fetch(`${WC_BASE_URL}/products/${productId}/variations?per_page=50`, {
         headers: { 'Authorization': `Basic ${AUTH}` }
@@ -96,6 +103,7 @@ export const wpService = {
   },
 
   async fetchArticles(): Promise<JournalArticle[]> {
+    if (!SITE_URL) return [];
     try {
       const response = await fetch(`${WP_BASE_URL}/posts?_embed`);
       if (!response.ok) return [];
