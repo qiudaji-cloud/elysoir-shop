@@ -1,8 +1,8 @@
 
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
+ * SPDX1d-License-Identifier: Apache-2.0
+*/ 
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { BRAND_NAME } from '../constants';

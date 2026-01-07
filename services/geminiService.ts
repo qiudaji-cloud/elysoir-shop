@@ -6,10 +6,10 @@
 
 import { Product } from '../types';
 
-// 配置阿里的 API 端点
-const API_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
-// 这里使用 qwen-plus，您也可以改为 qwen-turbo (更便宜) 或 qwen-max (更强)
-const MODEL_NAME = "qwen-plus";
+// 1. API 端点已设为美国区地址，以匹配模型
+const API_URL = "https://dashscope-us.aliyuncs.com/compatible-mode/v1/chat/completions";
+// 2. 模型已设为您指定的 qwen-plus-2025-12-01-us
+const MODEL_NAME = "qwen-plus-2025-12-01-us";
 
 const getSystemInstruction = (products: Product[]) => {
   const productContext = products.map(p => 
@@ -39,19 +39,19 @@ const getSystemInstruction = (products: Product[]) => {
  * 但内部逻辑已替换为调用阿里通义千问 (Qwen)。
  */
 export const sendMessageToGemini = async (history: {role: string, text: string}[], newMessage: string, products: Product[]): Promise<string> => {
-  const apiKey = process.env.API_KEY || process.env.REACT_APP_API_KEY || import.meta.env?.VITE_API_KEY;
+  // 3. API 密钥变量已更新为 VITE_DASHSCOPE_API_KEY
+  const apiKey = import.meta.env?.VITE_DASHSCOPE_API_KEY;
 
   if (!apiKey) {
-    console.error("Missing API Key");
+    console.error("Missing API Key for AI service. Check your .env.local file for VITE_DASHSCOPE_API_KEY.");
     return "Configuration Error: Please provide an API Key in the environment variables.";
   }
 
   try {
-    // 构建符合 OpenAI 兼容格式的消息历史
     const messages = [
       { role: "system", content: getSystemInstruction(products) },
       ...history.map(h => ({
-        role: h.role === 'model' ? 'assistant' : 'user', // 阿里/OpenAI 使用 'assistant' 而不是 'model'
+        role: h.role === 'model' ? 'assistant' : 'user',
         content: h.text
       })),
       { role: "user", content: newMessage }
@@ -68,6 +68,7 @@ export const sendMessageToGemini = async (history: {role: string, text: string}[
         messages: messages,
         temperature: 0.7,
         max_tokens: 500
+        // 4. 已根据您的要求移除 enable_thinking 参数
       })
     });
 
@@ -79,7 +80,6 @@ export const sendMessageToGemini = async (history: {role: string, text: string}[
 
     const data = await response.json();
     
-    // 提取返回的文本内容
     const reply = data.choices?.[0]?.message?.content;
     
     return reply || "I apologize, I am unable to formulate a response at this moment.";

@@ -36,14 +36,27 @@ function App() {
   const [lastSync, setLastSync] = useState<string>('');
 
   const refreshData = useCallback(async () => {
-    const { products: wpProducts, categories: wpCategories } = await wpService.fetchProducts();
-    const wpArticles = await wpService.fetchArticles();
-    
-    setProducts(wpProducts.length > 0 ? wpProducts : FALLBACK_PRODUCTS);
-    setCategories(wpCategories);
-    setArticles(wpArticles.length > 0 ? wpArticles : FALLBACK_ARTICLES);
-    setLastSync(new Date().toLocaleTimeString());
-    setIsLoading(false);
+    setIsLoading(true);
+    try {
+      const { products: wpProducts, categories: wpCategories } = await wpService.fetchProducts();
+      const wpArticles = await wpService.fetchArticles();
+      
+      setProducts(wpProducts.length > 0 ? wpProducts : FALLBACK_PRODUCTS);
+      setCategories(wpCategories);
+      setArticles(wpArticles.length > 0 ? wpArticles : FALLBACK_ARTICLES);
+      setLastSync(new Date().toLocaleTimeString());
+    } catch (error) {
+      console.error("🔴 Failed to fetch data from WooCommerce:", error);
+      // In case of error, load the application with fallback data
+      setProducts(FALLBACK_PRODUCTS);
+      setArticles(FALLBACK_ARTICLES);
+      const fallbackCategories = ['All', ...new Set(FALLBACK_PRODUCTS.map(p => p.category))];
+      setCategories(fallbackCategories);
+      console.log("🔵 Using fallback data. Please check your .env.local settings and WooCommerce API connection.");
+    } finally {
+      // This is crucial: always stop the loading spinner, regardless of success or failure
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {

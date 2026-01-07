@@ -41,18 +41,19 @@ jobs:
           VITE_WC_CONSUMER_SECRET: ${{ secrets.WC_CONSUMER_SECRET }}
           VITE_ALI_API_KEY: ${{ secrets.ALI_API_KEY }}
 
-      # 步骤 5: 通过 FTP 部署到您的服务器
-      - name: Deploy to FTP Server
+      # 步骤 5: 通过 SFTP 部署到您的服务器
+      - name: Deploy to SFTP Server
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           # 使用您在 GitHub Secrets 中设置的 FTP 凭据
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+          protocol: sftp # 指定使用 SFTP 协议
+          port: 22 # SFTP 的标准端口
           # 本地构建输出的文件夹，Vite 默认为 dist
           local-dir: ./dist/
           # 您服务器上网站的根目录。请务必确认这是正确的路径！
-          # 如果您的 WordPress 在 /www/wwwroot/elysoir.top/，那么这里通常就是这个路径。
           server-dir: /www/wwwroot/elysoir.top/
           # 清理目标目录，确保只保留最新部署的文件
-          cleanup: true
+          dangerous-clean-slate: true
