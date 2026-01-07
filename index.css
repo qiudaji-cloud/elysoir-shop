@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -34,4 +34,151 @@ h1, h2, h3, h4, .font-serif {
 
 .animate-fade-in-up {
   animation: fade-in-up 1s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+}
+
+/* ELYSOIR 专属样式定义 - 来自 Elementor 内容 */
+.elysoir-container {
+  font-family: 'Montserrat', sans-serif;
+  max-width: 1000px;
+  margin: 40px auto;
+  color: #333;
+  line-height: 1.6;
+}
+.elysoir-flex {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  flex-wrap: wrap;
+  margin-bottom: 60px;
+}
+.elysoir-image-side {
+  flex: 1;
+  min-width: 300px;
+}
+.elysoir-image-side img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+.elysoir-text-side {
+  flex: 1;
+  min-width: 300px;
+  padding: 20px;
+}
+.elysoir-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 20px;
+  color: #1a1a1a;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+.elysoir-description {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 30px;
+}
+.elysoir-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  background: #fdfdfd;
+  padding: 30px;
+  border: 1px solid #f0f0f0;
+}
+.elysoir-spec-item b {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #999;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+}
+.elysoir-spec-item p {
+  margin: 0;
+  font-size: 14px;
+  color: #444;
+}
+.elysoir-note {
+  margin-top: 30px;
+  font-size: 13px;
+  font-style: italic;
+  color: #999;
+  text-align: center;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .elysoir-flex { gap: 30px; }
+  .elysoir-title { font-size: 26px; }
+  .elysoir-container { padding: 15px; }
+}
+
+/* 全局高级感设定 */
+.elysoir-master-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: #fff;
+  font-family: 'Montserrat', sans-serif;
+  overflow: hidden;
+}
+.elysoir-master-container img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+.elysoir-text-block {
+  padding: 60px 10%;
+  text-align: center;
+  background: #fff;
+}
+.elysoir-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 25px;
+  color: #1a1a1a;
+}
+.elysoir-subtext {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #666;
+  margin-bottom: 0;
+}
+.elysoir-specs-section {
+  display: flex;
+  flex-wrap: wrap;
+  background: #fafafa;
+  padding: 40px 5%;
+  border-top: 1px solid #f0f0f0;
+}
+.spec-item {
+  flex: 1;
+  min-width: 200px;
+  padding: 20px;
+  text-align: center;
+}
+.spec-label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #aaa;
+  margin-bottom: 8px;
+}
+.spec-value {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+@media (max-width: 768px) {
+  .elysoir-text-block { padding: 40px 20px; }
+  .elysoir-heading { font-size: 22px; }
 }
