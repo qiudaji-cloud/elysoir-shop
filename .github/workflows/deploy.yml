@@ -23,11 +23,12 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # 注入所有需要的环境变量
+          # 注入环境变量
           VITE_SITE_URL: ${{ secrets.VITE_SITE_URL }}
           VITE_WC_CONSUMER_KEY: ${{ secrets.VITE_WC_CONSUMER_KEY }}
           VITE_WC_CONSUMER_SECRET: ${{ secrets.VITE_WC_CONSUMER_SECRET }}
-          VITE_DASHSCOPE_API_KEY: ${{ secrets.VITE_DASHSCOPE_API_KEY }}
+          # 关键修正：将 GitHub Secrets 中的 ALI_API_KEY 映射给代码中的 VITE_DASHSCOPE_API_KEY
+          VITE_DASHSCOPE_API_KEY: ${{ secrets.ALI_API_KEY }}
 
       - name: FTP Deploy
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -35,9 +36,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          # 暂时尝试使用标准 FTP，排除 FTPS 证书或端口问题
+          # 保持 FTP 协议（如果服务器支持加密，建议后续改回 ftps）
           protocol: ftp
-          # 注意：local-dir 必须以 ./ 开头
           local-dir: ./dist/
-          # ⚠️ 如果部署后网页不显示，请确认您的 FTP 服务器是否需要上传到 /public_html/ 目录
           server-dir: /
