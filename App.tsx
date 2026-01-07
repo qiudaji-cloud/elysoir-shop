@@ -8,7 +8,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import ProductGrid from './components/ProductGrid';
-import CategoryPage from './components/CategoryPage'; // 新增导入
+import CategoryPage from './components/CategoryPage';
 import About from './components/About';
 import Journal from './components/Journal';
 import Assistant from './components/Assistant';
@@ -28,7 +28,6 @@ function App() {
   
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(['All']);
-  // 全局管理当前选中的分类（用于首页）
   const [activeCategory, setActiveCategory] = useState<string>('All');
   
   const [articles, setArticles] = useState<JournalArticle[]>([]);
@@ -54,7 +53,6 @@ function App() {
     e.preventDefault();
     if (view.type !== 'home') {
       setView({ type: 'home' });
-      // 如果点击的是 Logo 或 Home，重置首页分类为 All
       if (targetId === '' || targetId === 'products') {
         setActiveCategory('All');
       }
@@ -69,9 +67,6 @@ function App() {
     setView({ type: 'product', product: p });
   };
 
-  // 修改：处理分类点击
-  // 如果是 'All'，回到首页并滚动。
-  // 如果是具体分类，进入独立的分类页面。
   const handleCategorySelect = (category: string) => {
     if (category === 'All') {
         setActiveCategory('All');
@@ -132,10 +127,10 @@ function App() {
             cartCount={cartItems.length}
             onOpenCart={() => setIsCartOpen(true)}
             categories={categories}
-            products={products} // 传递产品列表给导航栏
+            products={products}
             activeCategory={view.type === 'category' ? view.category : activeCategory}
             onCategorySelect={handleCategorySelect}
-            onProductSelect={handleProductClick} // 传递产品点击处理函数
+            onProductSelect={handleProductClick}
         />
       )}
       
@@ -163,11 +158,10 @@ function App() {
           </>
         )}
 
-        {/* 新增：独立分类页面渲染 */}
         {view.type === 'category' && (
             <CategoryPage 
                 category={view.category}
-                products={products} // CategoryPage 内部会根据 category 进行过滤
+                products={products}
                 categories={categories}
                 onProductClick={handleProductClick}
                 onBack={() => {
@@ -182,7 +176,6 @@ function App() {
           <ProductDetail 
             product={view.product} 
             onBack={() => {
-              // 智能返回：如果之前是在分类页，理想情况是返回分类页，这里简化为返回首页或分类页逻辑
               setView({ type: 'home' });
               setTimeout(() => scrollToSection('products'), 50);
             }}
@@ -207,11 +200,11 @@ function App() {
 
       {view.type !== 'checkout' && <Footer onLinkClick={handleNavClick} />}
       
-      {/* <Assistant 
+      <Assistant 
         products={products} 
         onSync={refreshData}
         lastSync={lastSync}
-      /> */}
+      />
       
       <CartDrawer 
         isOpen={isCartOpen}
