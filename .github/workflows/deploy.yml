@@ -26,7 +26,6 @@ jobs:
           VITE_SITE_URL: ${{ secrets.VITE_SITE_URL }}
           VITE_WC_CONSUMER_KEY: ${{ secrets.VITE_WC_CONSUMER_KEY }}
           VITE_WC_CONSUMER_SECRET: ${{ secrets.VITE_WC_CONSUMER_SECRET }}
-          # 更新：直接从同名 Secret 读取，请确保 GitHub Secrets 里已改为 VITE_DASHSCOPE_API_KEY
           VITE_DASHSCOPE_API_KEY: ${{ secrets.VITE_DASHSCOPE_API_KEY }}
 
       - name: FTP Deploy
@@ -37,5 +36,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
           local-dir: ./dist/
-          # 关键修改：改为 ./ (当前目录) 而不是 / (根目录)，避免权限错误
           server-dir: ./
+          # ❌ 绝对不要开启 delete: true，因为它会删除 WordPress 后台文件！
+          # 保持默认模式（仅上传和覆盖），安全第一。
+          delete: false
