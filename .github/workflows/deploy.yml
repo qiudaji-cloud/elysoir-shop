@@ -36,7 +36,6 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
           local-dir: ./dist/
+          # 假设您已将 FTP 账号根目录修改为网站根目录，这里使用 ./
           server-dir: ./
-          # ❌ 绝对不要开启 delete: true，因为它会删除 WordPress 后台文件！
-          # 保持默认模式（仅上传和覆盖），安全第一。
           delete: false
