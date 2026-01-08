@@ -36,6 +36,6 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
           local-dir: ./dist/
-          # 假设您已将 FTP 账号根目录修改为网站根目录，这里使用 ./
           server-dir: ./
-          delete: false
+          # 移除无效的 'delete' 参数。
+          # 该 Action 默认不会删除服务器上的其他文件，这正是我们想要的（保护 WordPress）。
