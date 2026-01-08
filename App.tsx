@@ -5,6 +5,7 @@
 */
 
 // Final fix: Re-enabling the AI Assistant to trigger deployment.
+// Manual deploy trigger: 2026-01-08-ForceRefresh-v1
 import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
