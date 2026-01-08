@@ -36,6 +36,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
           local-dir: ./dist/
+          # 回归逻辑原点：既然 FTP 登录即见 wp-admin，说明根目录就是网站根目录
+          # 所以必须用 ./，绝对不能用绝对路径（因为对 FTP 用户来说绝对路径不存在）
           server-dir: ./
-          # 移除无效的 'delete' 参数。
-          # 该 Action 默认不会删除服务器上的其他文件，这正是我们想要的（保护 WordPress）。
+          delete: false
