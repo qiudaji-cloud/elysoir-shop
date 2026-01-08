@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -11,5 +12,10 @@ export default defineConfig({
        protocol: 'wss', // 使用加密的 WebSocket 协议，匹配 HTTPS 预览环境
        clientPort: 443, 
     }
-  }
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
 });
