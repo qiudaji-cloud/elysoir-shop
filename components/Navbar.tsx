@@ -79,42 +79,49 @@ const Navbar: React.FC<NavbarProps> = ({
     <>
       <nav 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ease-in-out ${
-          isDarkTheme ? 'bg-[#F5F2EB]/95 backdrop-blur-md py-4 shadow-sm' : 'bg-transparent py-8'
+          isDarkTheme ? 'bg-[#F5F2EB]/95 backdrop-blur-md py-4 shadow-sm' : 'bg-transparent py-6 md:py-8'
         }`}
       >
         <div className="max-w-[1800px] mx-auto px-6 md:px-12 flex items-center justify-between">
           
-          <button 
-            className={`block md:hidden focus:outline-none transition-colors duration-500 ${textColorClass} z-50 relative p-2 -ml-2`}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-6 h-6">
-               {mobileMenuOpen ? (
-                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-               ) : (
-                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-               )}
-             </svg>
-          </button>
+          {/* Left Section: Menu Toggle (Mobile) + Logo */}
+          <div className="flex items-center gap-4 md:gap-0 z-50">
+             {/* Mobile Menu Toggle */}
+             <button 
+                className={`block md:hidden focus:outline-none transition-colors duration-500 ${textColorClass} p-1 -ml-1`}
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-6 h-6">
+                   {mobileMenuOpen ? (
+                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                   ) : (
+                     <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                   )}
+                 </svg>
+              </button>
 
-          <a 
-            href="#" 
-            onClick={(e) => {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                onNavClick(e, ''); 
-            }}
-            className={`text-2xl md:text-3xl font-serif font-medium tracking-tight z-50 transition-colors duration-500 absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0 ${textColorClass}`}
-          >
-            {BRAND_NAME}
-          </a>
+              {/* Logo - Left aligned on mobile, centered on desktop (via absolute below) */}
+              <a 
+                href="#" 
+                onClick={(e) => {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    onNavClick(e, ''); 
+                }}
+                className={`text-2xl md:text-3xl font-serif font-medium tracking-tight transition-colors duration-500 relative md:absolute md:left-1/2 md:-translate-x-1/2 ${textColorClass}`}
+              >
+                {BRAND_NAME}
+              </a>
+          </div>
           
-          <div className={`hidden md:flex items-center gap-12 text-[10px] font-bold tracking-[0.3em] uppercase transition-colors duration-500 ${textColorClass}`}>
+          {/* Desktop Menu Links */}
+          <div className={`hidden md:flex items-center gap-12 text-[10px] font-bold tracking-[0.3em] uppercase transition-colors duration-500 absolute left-12 ${textColorClass}`}>
             <a href="#products" onClick={(e) => handleLinkClick(e, 'products')} className="hover:opacity-50 transition-opacity">The Shop</a>
             <a href="#about" onClick={(e) => handleLinkClick(e, 'about')} className="hover:opacity-50 transition-opacity">Our Story</a>
             <a href="#journal" onClick={(e) => handleLinkClick(e, 'journal')} className="hover:opacity-50 transition-opacity">Journal</a>
           </div>
 
+          {/* Right Section: Cart */}
           <div className="flex items-center z-50 relative">
             <button 
               onClick={handleCartClick}
