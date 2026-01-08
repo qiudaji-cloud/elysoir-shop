@@ -22,7 +22,7 @@ const Hero: React.FC = () => {
     <section className="relative w-full h-screen min-h-[800px] overflow-hidden bg-[#2C2A26]">
       <div className="absolute inset-0 w-full h-full">
         <img 
-            src="https://images.unsplash.com/photo-1715931633190-f71424a46a5c?q=80&w=2787&auto=format&fit=crop" 
+            src="https://storage.googleapis.com/project-sparkle-sandbox-pub/genie-b0/user_images/20240726/160301_936/C0CB5162-81F8-4A59-B85E-A258C5D33C3F..jpg" 
             alt="Elegant fashion model with jewelry" 
             className="w-full h-full object-cover grayscale-[0.3] brightness-[0.7] transition-all duration-1000"
         />
