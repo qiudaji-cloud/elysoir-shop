@@ -22,7 +22,7 @@ const Hero: React.FC = () => {
     <section className="relative w-full h-screen min-h-[800px] overflow-hidden bg-[#2C2A26]">
       <div className="absolute inset-0 w-full h-full">
         <img 
-            src="https://images.unsplash.com/photo-1534126511673-b6899657816a?auto=format&fit=crop&q=80&w=2000" 
+            src="https://images.unsplash.com/photo-1715931633190-f71424a46a5c?q=80&w=2787&auto=format&fit=crop" 
             alt="Elegant fashion model with jewelry" 
             className="w-full h-full object-cover grayscale-[0.3] brightness-[0.7] transition-all duration-1000"
         />
@@ -38,7 +38,7 @@ const Hero: React.FC = () => {
             Elysoir <span className="italic text-[#EBE7DE]">Select.</span>
           </h1>
           <p className="max-w-xl mx-auto text-lg md:text-xl text-white/70 font-light leading-relaxed mb-12">
-            Independent boutique for boutique jewelry, designer art toys, <br className="hidden md:block"/> and sophisticated timepieces.
+            Independent boutique for boutique jewelry, designer art toys, <br className="hidden md:block" /> and sophisticated timepieces.
           </p>
           
           <a 
