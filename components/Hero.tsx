@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-
 import React from 'react';
+import heroImage from '@/assets/elg1.webp';
 
 const Hero: React.FC = () => {
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
@@ -19,10 +19,10 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section className="relative w-full h-screen min-h-[800px] overflow-hidden bg-[#2C2A26]">
+    <section className="relative w-full h-[70vh] min-h-[600px] overflow-hidden bg-[#2C2A26]">
       <div className="absolute inset-0 w-full h-full">
         <img 
-            src="https://storage.googleapis.com/project-sparkle-sandbox-pub/genie-b0/user_images/20240726/160301_936/C0CB5162-81F8-4A59-B85E-A258C5D33C3F..jpg" 
+            src={heroImage} 
             alt="Elegant fashion model with jewelry" 
             className="w-full h-full object-cover grayscale-[0.3] brightness-[0.7] transition-all duration-1000"
         />
