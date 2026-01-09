@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { JournalArticle } from '../types';
+import DOMPurify from 'dompurify';
 
 interface JournalDetailProps {
   article: JournalArticle;
@@ -14,6 +15,9 @@ interface JournalDetailProps {
 }
 
 const JournalDetail: React.FC<JournalDetailProps> = ({ article, onBack }) => {
+  // 预先清洗内容
+  const sanitizedContent = DOMPurify.sanitize(article.content.toString());
+
   return (
     <div className="min-h-screen bg-[#F5F2EB] animate-fade-in-up">
        <div className="w-full h-[50vh] md:h-[60vh] relative overflow-hidden">
@@ -45,8 +49,8 @@ const JournalDetail: React.FC<JournalDetailProps> = ({ article, onBack }) => {
              </h1>
 
              <div className="prose prose-stone prose-lg mx-auto font-light leading-loose text-[#5D5A53]">
-               {/* 渲染 HTML 内容，因为 WordPress 返回的是 HTML 字符串 */}
-               <div dangerouslySetInnerHTML={{ __html: article.content.toString() }} />
+               {/* 使用清洗后的安全 HTML */}
+               <div dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
              </div>
              
              <div className="mt-16 pt-12 border-t border-[#D6D1C7] flex justify-center">
