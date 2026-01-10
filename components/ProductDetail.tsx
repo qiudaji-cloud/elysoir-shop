@@ -7,6 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product, ProductOption } from '../types';
 import { wpService } from '../services/wpService';
+import DOMPurify from 'dompurify';
 
 interface ProductDetailProps {
   product: Product;
@@ -19,6 +20,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onAddToC
   const [error, setError] = useState<string | null>(null);
   const [isVariationsLoading, setIsVariationsLoading] = useState(false);
   const [richOptions, setRichOptions] = useState<ProductOption[]>(product.options || []);
+  
+  // 预先清洗描述内容
+  const sanitizedDescription = DOMPurify.sanitize(product.longDescription || product.description);
   
   // 轮播图状态
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -231,9 +235,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onAddToC
                
                <div className="mt-12 pt-10 border-t border-[#D6D1C7]/50">
                   <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#A8A29E] mb-6">Details</h4>
+                  {/* 使用清洗后的安全 HTML */}
                   <div 
                     className="prose prose-stone prose-sm max-w-none text-[#5D5A53] font-serif leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: product.longDescription || product.description }}
+                    dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
                   />
                </div>
 

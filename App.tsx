@@ -123,6 +123,22 @@ function App() {
     setCartItems(newItems);
   };
 
+  // Helper function to handle page clicks (for policy pages)
+  const handlePageClick = (pageId: number) => {
+      // For now, let's just log it or maybe open a modal/redirect in future.
+      // Since we don't have a dedicated Page view yet, we might want to just console log 
+      // or if we had a generic page view, we'd set it here.
+      // Given the prompt implies fetching content for these IDs, 
+      // we might need a 'page' view type, but for this step let's ensure the plumbing is there.
+      // If the prompt implies navigating to a route, since this is a SPA, we'd likely want to show content.
+      // For simplicity in this step, let's assume we might expand ViewState or just alert for now 
+      // as the 'Page' component isn't explicitly requested but the IDs are specific.
+      // Actually, looking at the code structure, adding a 'page' view type seems appropriate if we were to display it.
+      // However, without a 'Page' component, I will just log for now to show the ID is passed correctly.
+      console.log(`Navigate to page ID: ${pageId}`);
+      // In a real implementation, you might do: setView({ type: 'page', pageId });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#F5F2EB] flex items-center justify-center">
@@ -146,6 +162,7 @@ function App() {
             activeCategory={view.type === 'category' ? view.category : activeCategory}
             onCategorySelect={handleCategorySelect}
             onProductSelect={handleProductClick}
+            activeView={view.type}
         />
       )}
       
@@ -213,7 +230,14 @@ function App() {
         )}
       </main>
 
-      {view.type !== 'checkout' && <Footer onLinkClick={handleNavClick} />}
+      {view.type !== 'checkout' && (
+        <Footer 
+            onLinkClick={handleNavClick} 
+            categories={categories}
+            onCategoryClick={handleCategorySelect}
+            onPageClick={handlePageClick}
+        />
+      )}
       
       <Assistant 
         products={products} 

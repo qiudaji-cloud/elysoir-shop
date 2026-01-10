@@ -6,65 +6,43 @@
 
 import { Product, JournalArticle, CartItem } from '../types';
 
-// 从 Vite 环境变量中读取配置，提供默认空字符串以防构建失败
-const SITE_URL = import.meta.env.VITE_SITE_URL || '';
-const CK = import.meta.env.VITE_WC_CONSUMER_KEY || '';
-const CS = import.meta.env.VITE_WC_CONSUMER_SECRET || '';
-
-// 移除顶层的强制检查 throw new Error，改为在控制台输出警告
-// 这样可以确保 CI/CD 构建流程不会因为缺少密钥而中断
-if (!SITE_URL || !CK || !CS) {
-  console.warn("WooCommerce environment variables are missing. Product data will not load correctly.");
-}
-
-const WC_BASE_URL = `${SITE_URL}/wp-json/wc/v3`;
-const WP_BASE_URL = `${SITE_URL}/wp-json/wp/v2`;
-
-// 只有当密钥存在时才生成 Auth Header，否则为空
-const AUTH = (CK && CS) ? btoa(`${CK}:${CS}`) : '';
+// 配置
+// 在生产环境，这些请求会被 Nginx 拦截并转发到 WordPress 后端
+// 在开发环境，vite.config.ts 中的代理会处理这些请求
+const WC_BASE_URL = '/api/wc'; 
+const WP_BASE_URL = '/api/wp';
 
 export const wpService = {
   async fetchProducts(): Promise<{ products: Product[], categories: string[] }> {
-    // 运行时检查：如果没有配置，直接返回空数据
-    if (!SITE_URL || !AUTH) {
-        return { products: [], categories: ['All'] };
-    }
-
     try {
       // 并行请求：同时获取产品和类目
+      // 注意：前端不再发送 Authorization 头，这是由 Nginx 或 Vite 代理层在服务端完成的
       const [productsRes, categoriesRes] = await Promise.all([
-        fetch(`${WC_BASE_URL}/products?per_page=100&status=publish`, {
-          headers: { 'Authorization': `Basic ${AUTH}` }
-        }),
-        fetch(`${WC_BASE_URL}/products/categories?per_page=100&hide_empty=true&orderby=count&order=desc`, {
-          headers: { 'Authorization': `Basic ${AUTH}` }
-        })
+        fetch(`${WC_BASE_URL}/products?per_page=100&status=publish`),
+        fetch(`${WC_BASE_URL}/products/categories?per_page=100&hide_empty=true&orderby=count&order=desc`)
       ]);
 
-      if (!productsRes.ok) throw new Error(`Products HTTP error! status: ${productsRes.status}`);
+      if (!productsRes.ok) {
+         console.error(`Products HTTP error! status: ${productsRes.status}`);
+         return { products: [], categories: ['All'] };
+      }
+      
       const wcProducts = await productsRes.json();
 
       // 处理产品数据
       const products: Product[] = wcProducts.map((p: any) => ({
         id: p.id.toString(),
         name: p.name,
-        // Tagline (简短描述): 我们保留清洗 HTML 的逻辑，因为它通常用于卡片上的纯文本展示
+        // Tagline: 清洗HTML用于卡片展示
         tagline: p.short_description ? p.short_description.replace(/<[^>]*>?/gm, '').substring(0, 60) + '...' : 'Exclusively for Elysoir',
-        
-        // Description (短描述): 保留 HTML，以便在详情页正确渲染富文本
+        // Description: 保留HTML，详情页会使用 DOMPurify 渲染
         description: p.short_description || '',
-        
-        // Long Description (长描述): 保留 HTML
         longDescription: p.description || '',
-        
         price: parseFloat(p.price || '0'),
         category: p.categories[0]?.name || 'Collection',
         categories: p.categories.map((c: any) => c.name),
-        // 主图
         imageUrl: p.images[0]?.src || 'https://images.unsplash.com/photo-1515562141207-7a18b5ce7142?auto=format&fit=crop&q=80&w=1000',
-        // 轮播图相册：映射所有图片的 URL
         gallery: p.images?.map((img: any) => img.src) || [],
-        
         features: p.attributes?.find((a: any) => a.name === 'Specifications' || a.name === 'Details')?.options || ['Fine Craftsmanship', 'Limited Edition'],
         hasVariations: p.variations && p.variations.length > 0,
         options: p.attributes
@@ -96,11 +74,8 @@ export const wpService = {
   },
 
   async fetchProductVariations(productId: string): Promise<any[]> {
-    if (!SITE_URL || !AUTH) return [];
     try {
-      const response = await fetch(`${WC_BASE_URL}/products/${productId}/variations?per_page=50`, {
-        headers: { 'Authorization': `Basic ${AUTH}` }
-      });
+      const response = await fetch(`${WC_BASE_URL}/products/${productId}/variations?per_page=50`);
       if (!response.ok) return [];
       return await response.json();
     } catch (error) {
@@ -109,11 +84,11 @@ export const wpService = {
   },
 
   getCheckoutUrl(cartItems: CartItem[]): string {
-    return `${SITE_URL}/cart`;
+    // 简单的重定向到购物车页面，后续由 WordPress 处理
+    return `/cart`;
   },
 
   async fetchArticles(): Promise<JournalArticle[]> {
-    if (!SITE_URL) return [];
     try {
       const response = await fetch(`${WP_BASE_URL}/posts?_embed`);
       if (!response.ok) return [];
